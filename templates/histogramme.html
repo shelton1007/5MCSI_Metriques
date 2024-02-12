@@ -4,58 +4,66 @@
     <title>Metrique</title>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
+  
   <body>
     <div id="chart_div"></div>
-  <script type="text/javascript">
-    // Charger la bibliothèque Google Charts
-    google.charts.load('current', {'packages':['corechart']});
-    google.charts.setOnLoadCallback(drawChart);
+<script>
+  google.charts.load('current', {packages: ['corechart']});
+  google.charts.setOnLoadCallback(drawBackgroundColor);
 
-    function drawChart() {
-      // Données de température de Paris pour les 16 prochains jours (exemple)
-      var data = google.visualization.arrayToDataTable([
-        ['Jours', 'Température (°C)'],
-        ['Jour 1', 10],
-        ['Jour 2', 12],
-        ['Jour 3', 13],
-        ['Jour 4', 15],
-        ['Jour 5', 14],
-        ['Jour 6', 16],
-        ['Jour 7', 17],
-        ['Jour 8', 18],
-        ['Jour 9', 19],
-        ['Jour 10', 20],
-        ['Jour 11', 21],
-        ['Jour 12', 22],
-        ['Jour 13', 23],
-        ['Jour 14', 22],
-        ['Jour 15', 20],
-        ['Jour 16', 19]
-      ]);
+  function drawBackgroundColor() {
+    fetch('/paris/')
+      .then(response => response.json())
+      .then(data => {
+        drawChart(data);
+      });
+  }
 
-      // Options du graphique
-      var options = {
-        title: 'Températures de Paris pour les 16 prochains jours',
-        legend: { position: 'none' },
-        hAxis: { title: 'Jours' },
-        vAxis: { title: 'Température (°C)' }
-      };
+  function drawChart(data) {
+    // Ajout d'une colonne supplémentaire pour les annotations
+    var dataArray = [['Date', 'Température', {role: 'style'}, {role: 'annotation'}]];
+    
+    data.results.forEach(entry => {
+      var date = new Date(entry.Jour * 1000);
+      var color = 'color: ' + getColorForTemperature(entry.temp);
+      var annotation = date.toLocaleDateString(); // Utiliser la date comme annotation
+      dataArray.push([date.toLocaleDateString(), entry.temp, color, annotation]);
+    });
 
-      // Créer un nouvel histogramme
-      var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+    var dataTable = google.visualization.arrayToDataTable(dataArray);
 
-      // Dessiner le graphique avec les données et les options
-      chart.draw(data, options);
+    var options = {
+      title: 'Évolution des températures de Paris pour les 16 prochains jours',
+      legend: {position: 'none'},
+      hAxis: {title: 'Date'},
+      vAxis: {title: 'Température'},
+      annotations: {
+        alwaysOutside: true, // Assure que les annotations sont toujours affichées à l'extérieur des barres
+        textStyle: {
+          fontSize: 12, // Vous pouvez ajuster la taille de police ici
+          color: '#000', // Et la couleur du texte des annotations
+          auraColor: 'none' // Désactive l'arrière-plan des annotations
+        }
+      }
+    };
 
-      // Récupération de données depuis notre API /paris/
-      fetch('/paris/')
-        .then(response => response.json())
-        .then(data => {
-          drawChart(data);
-        });
+    var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+    chart.draw(dataTable, options);
+  }
+
+  // Exemple de fonction pour déterminer la couleur en fonction de la température
+  function getColorForTemperature(temp) {
+    if(temp < 0) {
+      return '#1E90FF'; // Bleu pour les températures froides
+    } else if(temp >= 0 && temp < 20) {
+      return '#FFD700'; // Jaune pour les températures modérées
+    } else {
+      return '#FF4500'; // Rouge pour les températures chaudes
     }
-  </script>
+  }
+</script>
+
+
+
   </body>
 </html>
-
-
