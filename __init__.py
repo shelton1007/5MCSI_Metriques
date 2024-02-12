@@ -33,7 +33,7 @@ def monhistogramme():
 @app.route('/commits/')
 def commits():
     # Appel à l'API GitHub pour récupérer les données sur les commits
-    response = requests.get('https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits')
+    response = requests.get('https://github.com/shelton1007/5MCSI_Metriques')
     commits_data = response.json()
 
     # Analyse des données pour compter les commits par minute
