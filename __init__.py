@@ -10,8 +10,8 @@ app = Flask(__name__)
 @app.route('/')
 def hello_world():
     return render_template('hello.html') #Comm1
-  @app.route("/contact/")
-  def MaPremiereAPI():
+@app.route("/contact/")
+def MaPremiereAPI():
     return "<h2>Ma page de contact</h2>"
   
 if __name__ == "__main__":
