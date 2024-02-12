@@ -1,38 +1,60 @@
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Graphique des commits par minute</title>
-    <!-- Inclure la bibliothèque Google Charts -->
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(drawChart);
-
-        function drawChart() {
-            var data = new google.visualization.DataTable();
-            data.addColumn('string', 'Minute');
-            data.addColumn('number', 'Nombre de commits');
-            data.addRows([
-                {% for minute, commits_count in zip(minutes, commits_count) %}
-                ['{{ minute }}', {{ commits_count }}],
-                {% endfor %}
-            ]);
-
-            var options = {
-                title: 'Quantité de commits par minute',
-                legend: { position: 'none' },
-                hAxis: { title: 'Minute' },
-                vAxis: { title: 'Nombre de commits' }
-            };
-
-            var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
-            chart.draw(data, options);
-        }
-    </script>
+    <title>Commits</title>
+    <!-- Import de la librairie Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Graphique des commits par minute</h1>
-    <div id="chart_div" style="width: 100%; height: 500px;"></div>
+    <canvas id="commitChart" width="800" height="400"></canvas>
+    <script>
+        // Fonction pour extraire les minutes d'une date donnée
+        function extractMinutes(dateString) {
+            var dateObject = new Date(dateString);
+            return dateObject.getMinutes();
+        }
+
+        // Récupérer les données de l'API GitHub
+        fetch('https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits')
+            .then(response => response.json())
+            .then(data => {
+                // Initialiser un dictionnaire pour stocker le nombre de commits par minute
+                var commitsPerMinute = {};
+
+                // Parcourir les données de commits pour compter le nombre de commits par minute
+                data.forEach(commit => {
+                    var commitDate = commit.commit.author.date;
+                    var minute = extractMinutes(commitDate);
+                    commitsPerMinute[minute] = (commitsPerMinute[minute] || 0) + 1;
+                });
+
+                // Créer un tableau contenant les minutes et le nombre de commits
+                var minutes = Object.keys(commitsPerMinute);
+                var commitsCount = minutes.map(minute => commitsPerMinute[minute]);
+
+                // Créer un graphique avec Chart.js
+                var ctx = document.getElementById('commitChart').getContext('2d');
+                var commitChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: minutes,
+                        datasets: [{
+                            label: 'Commits par minute',
+                            data: commitsCount,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+    </script>
 </body>
 </html>
