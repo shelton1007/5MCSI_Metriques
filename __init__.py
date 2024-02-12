@@ -31,15 +31,24 @@ def mongraphique():
 def monhistogramme():
     return render_template("histogramme.html")
 
-@app.route('/extract-minutes/<date_string>')
-def extract_minutes(date_string):
-        date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
-        minutes = date_object.minute
-        return jsonify({'minutes': minutes})
-  
 @app.route('/commits/')
-def show_commits():
-    return render_template("commits.html")
+def commits():
+    # Appel à l'API GitHub pour récupérer les données sur les commits
+    response = requests.get('https://github.com/shelton1007/5MCSI_Metriques')
+    commits_data = response.json()
+
+    # Analyse des données pour compter les commits par minute
+    commits_per_minute = {}
+    for commit in commits_data:
+        date_string = commit['commit']['author']['date']
+        minute = date_string[14:16]  # Extraire les minutes de la date
+        commits_per_minute[minute] = commits_per_minute.get(minute, 0) + 1
+
+    # Création de listes de minutes et de quantités de commits pour le graphique
+    minutes = list(commits_per_minute.keys())
+    commits_count = list(commits_per_minute.values())
+
+    return render_template('commit.html', minutes=minutes, commits_count=commits_count)
 
 if __name__ == "__main__":
   app.run(debug=True)
