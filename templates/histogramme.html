@@ -46,6 +46,13 @@
 
       // Dessiner le graphique avec les données et les options
       chart.draw(data, options);
+
+            // Récupération de données depuis notre API /paris/
+      fetch('/paris/')
+    .then(response => response.json())
+    .then(data => {
+      drawChart(data);
+    });
     }
   </script>
   </body>
