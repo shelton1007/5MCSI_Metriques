@@ -49,9 +49,9 @@
 
       // Récupération de données depuis notre API /paris/
       fetch('/paris/')
-      .then(response => response.json())
-      .then(data => {
-        drawChart(data);
+        .then(response => response.json())
+        .then(data => {
+          drawChart(data);
         });
     }
   </script>
